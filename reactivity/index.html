@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script src="./reactivity.js"></script>
+  <script>
+    const obj = reactive({
+      name: 'Lebron',
+      age: 23
+    })
+    const comAge = computed(function age() {
+      return obj.age * 2
+    })
+    obj.age = 20
+    console.log(comAge)
+  </script>
+</body>
+
+</html>
