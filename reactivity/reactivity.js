@@ -1,23 +1,56 @@
-// 工具方法
+// 工具方法 创建一个空的对象 freeze 冻结 不可配置 不可修改 可以枚举
+// Object.getOwnPropertyDescriptor(obj1,'name') configurable X  writable X  enumerable √
 const EMPTY_OBJ = Object.freeze({});
+// 原生的浅层拷贝方法
 const extend = Object.assign;
+// 原生的 hasOwnProperty 判断对象上的属性是否是自身的 而不是继承来的 对象实例上的方法
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 const hasOwn = (val, key) => hasOwnProperty.call(val, key);
+// 数值原生方法 判断时候是数组
 const isArray = Array.isArray;
+/*
+    判断是否是Map 
+    const map = new Map 
+    Object.prototype.toString.call(map)  ==> [object Map]
+*/
 const isMap = (val) => toTypeString(val) === '[object Map]';
+// 判断是否是函数
 const isFunction = (val) => typeof val === 'function';
+// 判断是否是字符串
 const isString = (val) => typeof val === 'string';
+// 判断是否是symbol
 const isSymbol = (val) => typeof val === 'symbol';
+// 判断是否是 对象 排除null 
 const isObject = (val) => val !== null && typeof val === 'object';
+// 对象 toString 方法
 const objectToString = Object.prototype.toString;
+/*
+    判断数据类型 [object Number] 
+    const num = 10 
+    typeof num ===> 'number'
+    Object.prototype.tiString.call(num) ==> '[object Number]'
+
+    const num1 = new Number(11)
+    typeof num1    ===> 'object'
+    Object.prototype.tiString.call(num1) ==> '[object Number]'
+*/
 const toTypeString = (value) => objectToString.call(value);
+// 得到真实的没有加工的没有包装的数据类型 如  '[object Map]'.slice(8, -1) => Map  Function String Number 等
 const toRawType = (value) => {
   return toTypeString(value).slice(8, -1);
 };
+// 判断是否是字符串形式的正整数 key '1' '2'
 const isIntegerKey = (key) => isString(key) &&
   key !== 'NaN' &&
   key[0] !== '-' &&
   '' + parseInt(key, 10) === key;
+/*
+    缓存字符串 方法 不用重复执行 
+    cache = {
+      abc: "Abc"
+      ccc: "Ccc"
+    }
+*/
 const cacheStringFunction = (fn) => {
   const cache = Object.create(null);
   return ((str) => {
@@ -28,20 +61,42 @@ const cacheStringFunction = (fn) => {
 /**
  * @private
  */
+// 转成 以大写字母写
 const capitalize = cacheStringFunction((str) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 });
-// compare whether a value has changed, accounting for NaN.
+/*
+    compare whether a value has changed, accounting for NaN. 比较一个值是否改变 包括NaN
+*/
 const hasChanged = (value, oldValue) => value !== oldValue && (value === value || oldValue === oldValue);
+// 封装 defineProperty
 const def = (obj, key, value) => {
   Object.defineProperty(obj, key, {
+    // 可配置
     configurable: true,
+    // 不可枚举
     enumerable: false,
     value
   });
 };
+/*
+    WeakMap 介绍
+    在 JavaScript 里，map API 可以通过使其四个 API 方法共用两个数组(一个存放键,一个存放值)来实现。
+    给这种 map 设置值时会同时将键和值添加到这两个数组的末尾。从而使得键和值的索引在两个数组中相对应。
+    当从该 map 取值的时候，需要遍历所有的键，然后使用索引从存储值的数组中检索出相应的值。
+    但这样的实现会有两个很大的缺点，首先赋值和搜索操作都是 O(n) 的时间复杂度( n 是键值对的个数)，
+    因为这两个操作都需要遍历全部整个数组来进行匹配。另外一个缺点是可能会导致内存泄漏，
+    因为数组会一直引用着每个键和值。这种引用使得垃圾回收算法不能回收处理他们，即使没有其他任何引用存在了。
+    相比之下，原生的 WeakMap 持有的是每个键对象的“弱引用”，这意味着在没有其他引用存在时垃圾回收能正确进行。
+    原生 WeakMap 的结构是特殊且有效的，其用于映射的 key 只有在其没有被回收时才是有效的。
+    正由于这样的弱引用，WeakMap 的 key 是不可枚举的 (没有方法能给出所有的 key)。如果key 是可枚举的话，其列表将会受垃圾回收机制的影响，
+    从而得到不确定的结果。因此，如果你想要这种类型对象的 key 值的列表，你应该使用 Map。
+    基本上，如果你要往对象上添加数据，又不想干扰垃圾回收机制，就可以使用 WeakMap。
+*/
+
 // 响应式相关
-// 所有需要响应式数据 data 
+
+// 所有需要响应式数据 data
 const targetMap = new WeakMap();
 // 副作用执行栈
 const effectStack = [];
@@ -910,6 +965,7 @@ class ComputedRefImpl {
     this._setter = _setter;
     this._dirty = true;
     this.__v_isRef = true;
+    // 这里调用 全局的 function effect 函数
     this.effect = effect(getter, {
       lazy: true,
       scheduler: () => {
@@ -950,4 +1006,7 @@ function computed(getterOrOptions) {
   return new ComputedRefImpl(getter, setter, isFunction(getterOrOptions) || !getterOrOptions.set);
 }
 
-// export { ITERATE_KEY, computed, customRef, effect, enableTracking, isProxy, isReactive, isReadonly, isRef, markRaw, pauseTracking, proxyRefs, reactive, readonly, ref, resetTracking, shallowReactive, shallowReadonly, shallowRef, stop, toRaw, toRef, toRefs, track, trigger, triggerRef, unref };
+/* export { ITERATE_KEY, computed, customRef, effect, enableTracking, isProxy, isReactive, isReadonly, isRef, markRaw,
+  pauseTracking, proxyRefs, reactive, readonly, ref, resetTracking, shallowReactive, shallowReadonly, shallowRef, stop,
+  toRaw, toRef, toRefs, track, trigger, triggerRef, unref };
+*/

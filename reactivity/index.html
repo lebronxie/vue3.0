@@ -14,11 +14,14 @@
       name: 'Lebron',
       age: 23
     })
-    const comAge = computed(function age() {
-      return obj.age * 2
-    })
-    obj.age = 20
-    console.log(comAge)
+    // effect(() => {
+    //   console.log(obj.age)
+    //   obj.age = 233
+    // })
+     // const comAge = computed(function age() {
+    //   return obj.age * 2
+    // })
+    // console.log(comAge)
   </script>
 </body>
 
