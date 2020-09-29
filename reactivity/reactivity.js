@@ -110,7 +110,7 @@ const MAP_KEY_ITERATE_KEY = Symbol('Map key iterate');
 function isEffect(fn) {
   return fn && fn._isEffect === true;
 }
-// 计算属性 computed 创建 effect 
+// 全局的 effect 函数 
 function effect(fn, options = EMPTY_OBJ) {
   if (isEffect(fn)) {
     fn = fn.raw;
